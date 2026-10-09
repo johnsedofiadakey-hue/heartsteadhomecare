@@ -53,7 +53,7 @@ env:
       - BUILD
       - RUNTIME
   - variable: REDIRECT_TO_CUSTOM_DOMAIN
-    value: "false"
+    value: "true"
     availability:
       - BUILD
       - RUNTIME

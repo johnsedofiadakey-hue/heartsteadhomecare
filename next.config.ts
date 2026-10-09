@@ -19,7 +19,12 @@ const nextConfig: NextConfig = {
   async redirects() {
     // Send visitors on the temporary Firebase address to the real domain once its certificate is live.
     if (process.env.REDIRECT_TO_CUSTOM_DOMAIN !== "true") return [];
-    return [{ source: "/:path*", has: [{ type: "host", value: "(?<host>.*\\.hosted\\.app)" }], destination: `https://${CUSTOM_DOMAIN}/:path*`, permanent: true }];
+    // App Hosting passes the visitor's address in X-Forwarded-Host; Host is the internal service name.
+    const hostedApp = ".*\\.hosted\\.app";
+    return [
+      { source: "/:path*", has: [{ type: "header", key: "x-forwarded-host", value: hostedApp }], destination: `https://${CUSTOM_DOMAIN}/:path*`, permanent: true },
+      { source: "/:path*", has: [{ type: "host", value: hostedApp }], destination: `https://${CUSTOM_DOMAIN}/:path*`, permanent: true },
+    ];
   },
 };
 

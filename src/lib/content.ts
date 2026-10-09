@@ -5,8 +5,14 @@ import { defaultSite, type SiteData } from "@/lib/site-data";
 export async function getSiteData(): Promise<SiteData> {
   const db = adminDb();
   if (!db) return defaultSite;
-  const snapshot = await db.doc("site/published").get();
-  return snapshot.exists ? normalizeSite(snapshot.data() as Partial<SiteData>) : defaultSite;
+  try {
+    const snapshot = await db.doc("site/published").get();
+    return snapshot.exists ? normalizeSite(snapshot.data() as Partial<SiteData>) : defaultSite;
+  } catch (error) {
+    // Keep the public site up with seeded content if Firestore is unreachable or not yet provisioned.
+    console.error("Failed to load published site content; using defaults.", error);
+    return defaultSite;
+  }
 }
 
 export async function getDraftData(): Promise<SiteData> {

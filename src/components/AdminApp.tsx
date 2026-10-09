@@ -9,6 +9,8 @@ type Tab = "Overview" | "Homepage" | "About" | "Pages" | "Services" | "Jobs" | "
 const tabs: Tab[] = ["Overview", "Homepage", "About", "Pages", "Services", "Jobs", "Testimonials", "Blog", "Media", "Settings", "Inbox"];
 type Media = { id: string; url: string; alt: string };
 type Submission = { id: string; firstName: string; lastName: string; email: string; phone: string; createdAt: string | null; status: string; [key: string]: unknown };
+type ResumeInfo = { fileName: string; size: number };
+const isResume = (value: unknown): value is ResumeInfo => Boolean(value && typeof value === "object" && typeof (value as ResumeInfo).fileName === "string");
 
 function Field({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (value: string) => void; multiline?: boolean }) {
   return <label className="admin-field"><span>{label}</span>{multiline ? <textarea value={value} rows={4} onChange={(e) => onChange(e.target.value)}/> : <input value={value} onChange={(e) => onChange(e.target.value)}/>}</label>;
@@ -79,6 +81,17 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
       setMessage("Submission status updated.");
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not update the submission."); }
   }
+  async function downloadResume(id: string, fileName: string) {
+    setMessage("");
+    try {
+      const bearer = await token();
+      const response = await fetch(`/api/admin/resume?id=${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${bearer}` } });
+      if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.error || "Could not download the resume."); }
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a"); link.href = url; link.download = fileName; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not download the resume."); }
+  }
   async function upload(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); const form = event.currentTarget; const formData = new FormData(form); formData.set("alt", mediaAlt); setBusy(true); setMessage(""); try { const bearer = await token(); const response = await fetch("/api/admin/media", { method: "POST", headers: { authorization: `Bearer ${bearer}` }, body: formData }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Upload failed."); setMedia((current) => [{ id: result.id, url: result.url, alt: result.alt }, ...current]); setMediaAlt(""); form.reset(); setMessage("Image uploaded. Assign it to a page using the buttons below."); } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Upload failed."); } finally { setBusy(false); } }
 
   function patchSection<K extends "settings" | "home" | "about" | "pages">(section: K, key: keyof SiteData[K], value: string) { setSite((current) => ({ ...current, [section]: { ...current[section], [key]: value } })); }
@@ -95,7 +108,7 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
     if (!items.length) return <p>No {kind === "inquiries" ? "care inquiries" : "job applications"} are loaded.</p>;
     return items.map((item) => <details className="admin-submission-card" key={item.id}>
       <summary><strong>{item.firstName} {item.lastName}</strong><span>{item.email} · {item.phone}</span><small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : "Date unavailable"} · {item.status.replace("_", " ")}</small></summary>
-      <div className="admin-submission-detail">{Object.entries(item).filter(([key]) => !["id", "firstName", "lastName", "email", "phone", "createdAt", "updatedAt", "updatedBy", "status", "website"].includes(key)).map(([key, value]) => <p key={key}><strong>{key.replace(/([A-Z])/g, " $1")}:</strong> {String(value ?? "")}</p>)}<a href={`mailto:${item.email}`}>Reply by email</a><label>Status <select value={item.status} disabled={previewOnly} onChange={(event) => void updateSubmission(kind, item.id, event.target.value)}><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select></label></div>
+      <div className="admin-submission-detail">{Object.entries(item).filter(([key]) => !["id", "firstName", "lastName", "email", "phone", "createdAt", "updatedAt", "updatedBy", "status", "website", "resume"].includes(key)).map(([key, value]) => <p key={key}><strong>{key.replace(/([A-Z])/g, " $1")}:</strong> {String(value ?? "")}</p>)}{kind === "applications" && <p><strong>Resume:</strong> {isResume(item.resume) ? <button type="button" className="admin-link-button" onClick={() => void downloadResume(item.id, (item.resume as ResumeInfo).fileName)}>Download {item.resume.fileName}</button> : "Not provided"}</p>}<a href={`mailto:${item.email}`}>Reply by email</a><label>Status <select value={item.status} disabled={previewOnly} onChange={(event) => void updateSubmission(kind, item.id, event.target.value)}><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select></label></div>
     </details>);
   }
 

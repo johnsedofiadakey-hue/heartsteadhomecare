@@ -1,0 +1,3 @@
+export function HeartPhoto({ src, alt }: { src: string; alt: string }) {
+  return <div className="heart-art" role="img" aria-label={alt}><svg viewBox="0 0 540 500" aria-hidden="true"><defs><clipPath id="heartPhoto"><path d="M270 460 C240 440 42 300 42 163 C42 84 100 40 171 40 C222 40 252 68 270 102 C288 68 318 40 369 40 C440 40 498 84 498 163 C498 300 300 440 270 460 Z"/></clipPath></defs><image href={src} x="42" y="40" width="456" height="420" preserveAspectRatio="xMidYMid slice" clipPath="url(#heartPhoto)"/><path d="M270 460 C240 440 42 300 42 163 C42 84 100 40 171 40 C222 40 252 68 270 102 C288 68 318 40 369 40 C440 40 498 84 498 163 C498 300 300 440 270 460 Z" fill="none" stroke="var(--accent)" strokeWidth="31" strokeLinejoin="round"/></svg></div>;
+}

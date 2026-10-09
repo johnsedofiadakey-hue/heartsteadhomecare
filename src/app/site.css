@@ -108,3 +108,4 @@
   .intent-options button.selected{padding:12px 15px}
 }
 .care-form input[type=file]{height:auto;padding:12px 16px;cursor:pointer}.resume-field{display:block;max-width:560px}.form-hint{display:block;font-size:12px;line-height:1.5;color:#4d4e51;margin-top:7px}
+.footer-admin{margin-left:10px;color:#756b64;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}.footer-admin:hover{color:var(--accent)}

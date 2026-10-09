@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut, type User } from "firebase/auth";
+import { onAuthStateChanged, sendPasswordResetEmail, signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
+import Link from "next/link";
 import { clientAuth } from "@/lib/firebase-client";
 import type { SiteData, Service, Job, Post, Testimonial } from "@/lib/site-data";
 
@@ -29,6 +30,7 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [selectedService, setSelectedService] = useState(0);
   const [selectedJob, setSelectedJob] = useState(0);
   const [selectedPost, setSelectedPost] = useState(0);
@@ -59,8 +61,19 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
   }, [configured]);
 
   async function token() { const value = await user?.getIdToken(); if (!value) throw new Error("Sign in required."); return value; }
-  async function loginGoogle() { const auth = clientAuth(); if (!auth) return; setMessage(""); try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not sign in."); } }
-  async function loginEmail(event: React.FormEvent) { event.preventDefault(); const auth = clientAuth(); if (!auth) return; setMessage(""); try { await signInWithEmailAndPassword(auth, email, password); } catch { setMessage("Sign in failed. Check your account and password."); } }
+  async function loginEmail(event: React.FormEvent) {
+    event.preventDefault(); const auth = clientAuth(); if (!auth) return;
+    setMessage(""); setSigningIn(true);
+    try { await signInWithEmailAndPassword(auth, email.trim(), password); }
+    catch { setMessage("Sign in failed. Check your email and password and try again."); }
+    finally { setSigningIn(false); }
+  }
+  async function resetPassword() {
+    const auth = clientAuth(); if (!auth) return;
+    if (!email.trim()) { setMessage("Enter your email address above, then choose Forgot password."); return; }
+    try { await sendPasswordResetEmail(auth, email.trim()); } catch { /* Same message either way, so the form does not reveal which emails have accounts. */ }
+    setMessage("If that email belongs to an admin account, a password reset link is on its way.");
+  }
   async function save(mode: "save" | "publish") {
     setBusy(true); setMessage("");
     try { const bearer = await token(); const response = await fetch("/api/admin/site", { method: "PUT", headers: { "content-type": "application/json", authorization: `Bearer ${bearer}` }, body: JSON.stringify({ content: site, mode }) }); const result = await response.json(); if (!response.ok) throw new Error(result.error || "Could not save."); setMessage(mode === "publish" ? "Published successfully." : "Draft saved."); }
@@ -101,7 +114,7 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
   function changeTab(next: Tab) { setTab(next); setMessage(""); if (next === "Media" && user) void loadMedia(); if (next === "Inbox" && user) void loadInbox(); }
 
   if (!authReady) return <div className="admin-loading">Loading website editor…</div>;
-  if (configured && !user) return <div className="admin-login"><div className="admin-login-card"><img src="/images/logo-transparent.png" alt="Heartstead Home Care"/><h1>Website Admin</h1><p>Sign in with the approved owner account to edit the site.</p><button type="button" onClick={loginGoogle}>Continue with Google</button><div className="admin-separator">or use email and password</div><form onSubmit={loginEmail}><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required/><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required/><button type="submit">Sign In</button></form>{message && <p role="alert" className="admin-error">{message}</p>}</div></div>;
+  if (configured && !user) return <div className="admin-login"><div className="admin-login-card"><Link href="/" className="admin-back">← Back to website</Link><img src="/images/logo-transparent.png" alt="Heartstead Home Care"/><h1>Admin Login</h1><p>Sign in with the owner account to manage the website, enquiries and job applications.</p><form onSubmit={loginEmail}><label htmlFor="admin-email">Email</label><input id="admin-email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required/><label htmlFor="admin-password">Password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required/><button type="submit" disabled={signingIn}>{signingIn ? "Signing in…" : "Sign In"}</button></form><button type="button" className="admin-forgot" onClick={() => void resetPassword()}>Forgot password?</button>{message && <p role="alert" className="admin-error">{message}</p>}</div></div>;
   const previewOnly = !configured;
   const service = site.services[selectedService]; const job = site.jobs[selectedJob]; const post = site.posts[selectedPost]; const testimonial = site.testimonials[selectedTestimonial];
   function submissionCards(kind: "inquiries" | "applications", items: Submission[]) {

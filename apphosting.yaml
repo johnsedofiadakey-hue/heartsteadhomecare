@@ -1,6 +1,5 @@
 # Firebase App Hosting configuration
 # https://firebase.google.com/docs/app-hosting/configure
-# FIREBASE_OWNER_UID is added once the owner account exists; until then /admin stays locked.
 
 runConfig:
   minInstances: 0
@@ -38,6 +37,10 @@ env:
       - RUNTIME
   - variable: FIREBASE_STORAGE_BUCKET
     value: "heartsteadhomecare-27e56.firebasestorage.app"
+    availability:
+      - RUNTIME
+  - variable: FIREBASE_OWNER_UID
+    value: "NMGVSue18fcGnIzwATa9j1VsdCB3"
     availability:
       - RUNTIME
   - variable: SITE_READY_FOR_INDEXING

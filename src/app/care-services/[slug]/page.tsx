@@ -1,3 +1,4 @@
+import type { Metadata, ResolvingMetadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHero } from "@/components/PageHero";
@@ -7,10 +8,13 @@ import { defaultSite } from "@/lib/site-data";
 
 export const dynamic = "force-dynamic";
 export function generateStaticParams() { return defaultSite.services.map((item) => ({ slug: item.slug })); }
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }, parent: ResolvingMetadata): Promise<Metadata> {
   const { slug } = await params;
   const service = (await getSiteData()).services.find((item) => item.slug === slug);
-  return { title: service?.title ?? "Care Service", description: service?.summary, openGraph: service ? { description: service.summary } : undefined, twitter: service ? { description: service.summary } : undefined };
+  if (!service) return { title: "Care Service" };
+  // Keep the inherited preview image; only the text changes per service.
+  const { openGraph, twitter } = await parent;
+  return { title: service.title, description: service.summary, openGraph: { ...openGraph, description: service.summary }, twitter: { ...twitter, description: service.summary } };
 }
 export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

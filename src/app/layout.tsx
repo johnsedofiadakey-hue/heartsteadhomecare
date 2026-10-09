@@ -3,7 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { getSiteData } from "@/lib/content";
 import type { SiteData } from "@/lib/site-data";
-import { SITE_URL, indexingEnabled } from "@/lib/site-url";
+import { SITE_URL, indexingEnabled, requestOrigin } from "@/lib/site-url";
 import "./globals.css";
 import "./site.css";
 
@@ -12,7 +12,7 @@ const description = "Compassionate live-in and hourly home care in Skillman, New
 // Link-preview titles fall back to each page's <title>, so only shared fields are set here.
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    metadataBase: new URL(SITE_URL),
+    metadataBase: new URL(await requestOrigin()),
     title: { default: "Heartstead Home Care | Home Care in Skillman, NJ", template: "%s | Heartstead Home Care" },
     description,
     applicationName: "Heartstead Home Care",

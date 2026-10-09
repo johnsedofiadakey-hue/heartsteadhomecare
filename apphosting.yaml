@@ -44,6 +44,16 @@ env:
     availability:
       - RUNTIME
   - variable: SITE_READY_FOR_INDEXING
+    value: "true"
+    availability:
+      - RUNTIME
+  - variable: SITE_URL
+    value: "https://heartsteadhomecarenj.com"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: REDIRECT_TO_CUSTOM_DOMAIN
     value: "false"
     availability:
+      - BUILD
       - RUNTIME

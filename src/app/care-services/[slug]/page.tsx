@@ -10,7 +10,7 @@ export function generateStaticParams() { return defaultSite.services.map((item) 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const service = (await getSiteData()).services.find((item) => item.slug === slug);
-  return { title: service?.title ?? "Care Service" };
+  return { title: service?.title ?? "Care Service", description: service?.summary, openGraph: service ? { description: service.summary } : undefined, twitter: service ? { description: service.summary } : undefined };
 }
 export default async function ServicePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { HeartPhoto } from "@/components/HeartPhoto";
+import { Paragraphs } from "@/components/Paragraphs";
 import { ContactBand } from "@/components/ContactBand";
 import { getSiteData } from "@/lib/content";
 
@@ -9,7 +9,8 @@ export default async function HomePage() {
   const featured = site.services.filter((item) => item.featured).slice(0, 4);
   return <>
     <section className="hero"><div className="container hero-inner"><h1>{home.heroTitle}</h1><Link className="button button-large" href="/contact">Get Care Now</Link><p className="hero-phone">or call us at <a href={`tel:${settings.phone.replace(/\D/g, "")}`}>{settings.phone}</a></p><p className="hero-line">{settings.tagline}</p></div></section>
-    <section className="intro section container"><div className="intro-copy"><h2>{home.introTitle}</h2><p>{home.introText}</p><Link className="button-outline" href="/about-us">Learn More About Us</Link></div><HeartPhoto src={settings.heroImage} alt={settings.heroImageAlt}/></section>
+    <section className="hero-banner container"><img src={settings.heroImage} alt={settings.heroImageAlt}/></section>
+    <section className="intro intro-full section container"><div className="intro-copy"><h2>{home.introTitle}</h2><Paragraphs text={home.introText}/><Link className="button-outline" href="/about-us">Learn More About Us</Link></div></section>
     <section className="editorial section container"><div className="editorial-image"><img src={settings.familyImage} alt={settings.familyImageAlt}/></div><div className="editorial-copy"><h2>{home.careTitle}</h2><p>{home.careText}</p><Link className="button-outline" href="/care-services">Our Services</Link></div></section>
     <section className="editorial section container reverse"><div className="editorial-image"><img src={settings.caregiverImage} alt={settings.caregiverImageAlt}/></div><div className="editorial-copy"><h2>{home.teamTitle}</h2><p>{home.teamText}</p><Link className="button-outline" href="/caregiver-jobs">Learn About Caregiver Jobs</Link></div></section>
     <section className="service-preview"><div className="container"><div className="center-heading"><p className="eyebrow">Care for every situation</p><h2>{home.serviceTitle}</h2><p>{home.serviceText}</p></div><div className="services-grid">{featured.map((item, index) => <Link className="service-card" href={`/care-services/${item.slug}`} key={item.slug}><span className="service-icon" aria-hidden="true">{["⌂", "◷", "☾", "♡"][index]}</span><h3>{item.title}</h3><p>{item.summary}</p><span className="text-link">Learn More ›</span></Link>)}</div><div className="center-link"><Link className="button-outline" href="/care-services">View All Care Services</Link></div></div></section>

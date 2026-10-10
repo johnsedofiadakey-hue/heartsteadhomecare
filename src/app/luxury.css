@@ -316,16 +316,18 @@ body:has(.hero-cover) .main-header .nav-inner { min-height: 94px; }
 .hero-cover .hero-line { max-width: none; margin: 30px 0 0; padding: 11px 25px; color: #fff8e7; background: rgba(34,23,16,.70); border: 1px solid rgba(246,221,188,.58); font-size: clamp(17px,1.6vw,22px); font-weight: 600; line-height: 1.5; text-shadow: 0 2px 8px rgba(0,0,0,.7); backdrop-filter: blur(6px); }
 .hero-cover .hero-actions { justify-content: center; margin-top: 27px; gap: 12px; }
 .hero-cover .button-large, .hero-cover .hero-call { min-height: 59px; padding: 17px 28px; font-size: 13px; text-transform: uppercase; letter-spacing: .12em; }
+.hero-cover .button-large svg { flex: none; margin-left: 8px; }
 .hero-cover .hero-call { border-color: rgba(255,248,235,.9); color: #fffaf1; background: rgba(31,20,14,.36); text-shadow: 0 1px 6px rgba(0,0,0,.65); }
 .hero-cover .hero-call:hover { color: #2b1b14; background: #fff4e4; text-shadow: none; }
 .hero-cover-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 27px; display: flex; align-items: end; justify-content: space-between; pointer-events: none; }
 .hero-cover-bottom > * { pointer-events: auto; }
 .hero-cover .hero-motion { position: relative; top: auto; right: auto; width: 105px; height: 105px; border-color: rgba(255,243,224,.7); background: rgba(39,26,18,.52); box-shadow: 0 0 0 8px rgba(255,243,224,.08); backdrop-filter: blur(5px); }
-.hero-scroll { color: #fff3dc; font: 700 10px/1.5 'Plus Jakarta Sans',sans-serif; letter-spacing: .17em; text-transform: uppercase; text-decoration: none; text-shadow: 0 2px 8px #1c110c; }
-.hero-scroll span { display: inline-block; margin-left: 10px; font-size: 21px; vertical-align: -3px; animation: scroll-nudge 2.2s ease-in-out infinite; }
+.hero-scroll { display: inline-flex; align-items: center; gap: 10px; color: #fff3dc; font: 700 10px/1.5 'Plus Jakarta Sans',sans-serif; letter-spacing: .17em; text-transform: uppercase; text-decoration: none; text-shadow: 0 2px 8px #1c110c; }
+.hero-scroll svg { flex: none; animation: scroll-nudge 2.2s ease-in-out infinite; }
 .hero-scroll:hover { color: #fff; }
 .footer-social { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 23px; }
 .footer-social a { margin: 0; color: #ebd5b7; font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 5px; }
+.footer-social svg { display: inline-block; margin-left: 3px; vertical-align: -2px; }
 
 @keyframes hero-cover-reveal { from { opacity: .72; filter: saturate(.76); } to { opacity: 1; filter: saturate(1); } }
 @keyframes hero-cover-drift { to { transform: scale(1.018); } }
@@ -354,7 +356,7 @@ body:has(.hero-cover) .main-header .nav-inner { min-height: 94px; }
   .hero-cover-bottom { bottom: 20px; }
   .hero-cover .hero-motion { width: 65px; height: 65px; box-shadow: 0 0 0 5px rgba(255,243,224,.08); }
   .hero-scroll { font-size: 8px; letter-spacing: .1em; }
-  .hero-scroll span { margin-left: 3px; font-size: 18px; }
+  .hero-scroll { gap: 4px; }
 }
 
 @media (max-width: 360px) {

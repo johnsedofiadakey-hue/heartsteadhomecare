@@ -24,5 +24,7 @@ export async function getDraftData(): Promise<SiteData> {
 }
 
 function normalizeSite(saved: Partial<SiteData>): SiteData {
-  return { ...defaultSite, ...saved, settings: { ...defaultSite.settings, ...saved.settings }, home: { ...defaultSite.home, ...saved.home }, about: { ...defaultSite.about, ...saved.about }, pages: { ...defaultSite.pages, ...saved.pages }, services: saved.services ?? defaultSite.services, jobs: saved.jobs ?? defaultSite.jobs, testimonials: saved.testimonials ?? defaultSite.testimonials, posts: saved.posts ?? defaultSite.posts };
+  const settings = { ...defaultSite.settings, ...saved.settings };
+  settings.address = settings.address.replace(/,\s*NJ(?=\s+\d{5}(?:-\d{4})?$)/i, ", New Jersey");
+  return { ...defaultSite, ...saved, settings, home: { ...defaultSite.home, ...saved.home }, about: { ...defaultSite.about, ...saved.about }, pages: { ...defaultSite.pages, ...saved.pages }, services: saved.services ?? defaultSite.services, jobs: saved.jobs ?? defaultSite.jobs, testimonials: saved.testimonials ?? defaultSite.testimonials, posts: saved.posts ?? defaultSite.posts };
 }

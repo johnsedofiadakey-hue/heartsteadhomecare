@@ -3,11 +3,17 @@ import { z } from "zod";
 const text = (max = 1000) => z.string().trim().min(1).max(max);
 const optionalText = (max = 1000) => z.string().trim().max(max);
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100);
+const socialUrl = (host: string) => z.string().trim().max(1000).refine((value) => {
+  if (!value) return true;
+  try { const url = new URL(value); return url.protocol === "https:" && [host, `www.${host}`].includes(url.hostname); }
+  catch { return false; }
+}, { message: `Use a secure ${host} link or leave this blank.` });
 
 export const siteSchema = z.object({
   settings: z.object({
     brandName: text(120), tagline: text(200), phone: text(30), publicEmail: z.email().max(200),
-    address: text(250), serviceArea: text(250), heroImage: text(1000), heroImageAlt: text(250), familyImage: text(1000), familyImageAlt: text(250), caregiverImage: text(1000), caregiverImageAlt: text(250), paymentImage: text(1000), paymentImageAlt: text(250),
+    address: text(250), serviceArea: text(250), heroImage: text(1000), heroImageAlt: text(250), heroCoverImage: text(1000), heroCoverImageAlt: text(250), heroMobileImage: text(1000), heroMobileImageAlt: text(250), familyImage: text(1000), familyImageAlt: text(250), caregiverImage: text(1000), caregiverImageAlt: text(250), paymentImage: text(1000), paymentImageAlt: text(250),
+    instagramUrl: socialUrl("instagram.com"), tiktokUrl: socialUrl("tiktok.com"), facebookUrl: socialUrl("facebook.com"),
   }),
   home: z.object({
     heroTitle: text(220), introTitle: text(180), introText: text(2000), careTitle: text(180), careText: text(2000), teamTitle: text(180), teamText: text(2000),

@@ -30,12 +30,19 @@ export type SiteData = {
     serviceArea: string;
     heroImage: string;
     heroImageAlt: string;
+    heroCoverImage: string;
+    heroCoverImageAlt: string;
+    heroMobileImage: string;
+    heroMobileImageAlt: string;
     familyImage: string;
     familyImageAlt: string;
     caregiverImage: string;
     caregiverImageAlt: string;
     paymentImage: string;
     paymentImageAlt: string;
+    instagramUrl: string;
+    tiktokUrl: string;
+    facebookUrl: string;
   };
   home: {
     heroTitle: string;
@@ -104,16 +111,23 @@ export const defaultSite: SiteData = {
     tagline: "Compassionate care. Comfort at home.",
     phone: "609-910-2632",
     publicEmail: "Heartsteadh@gmail.com",
-    address: "23 Orchard Rd, Suite 210, Skillman, NJ 08558",
+    address: "23 Orchard Rd, Suite 210, Skillman, New Jersey 08558",
     serviceArea: "Skillman and surrounding New Jersey communities",
     heroImage: img.hero,
     heroImageAlt: "Heartstead caregiver laughing with an older man on the sofa at home",
+    heroCoverImage: "/images/family-care.webp",
+    heroCoverImageAlt: "An older woman smiling with her daughter at home",
+    heroMobileImage: "/images/care-pair.webp",
+    heroMobileImageAlt: "An older woman smiling with her caregiver at home",
     familyImage: img.home,
     familyImageAlt: "Heartstead caregiver making tea with an older woman in her kitchen",
     caregiverImage: img.daily,
     caregiverImageAlt: "Heartstead caregiver preparing a fresh meal with an older man in his kitchen",
     paymentImage: img.planning,
     paymentImageAlt: "Heartstead care coordinator reviewing a care plan with an older woman and her daughter",
+    instagramUrl: "https://www.instagram.com/heartstead_homecare/",
+    tiktokUrl: "https://www.tiktok.com/@n.j.heartstead.ho",
+    facebookUrl: "https://www.facebook.com/share/1FFWHVDVVj/?mibextid=wwXIfr",
   },
   home: {
     heroTitle: "Live-in & Hourly Home Care Always Available for Your Loved Ones",

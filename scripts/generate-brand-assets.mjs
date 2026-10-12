@@ -50,12 +50,12 @@ const { height: logoHeight } = await sharp(logo).metadata();
 const text = Buffer.from(`<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="630" fill="${IVORY}"/>
   <rect y="606" width="1200" height="24" fill="${BROWN}"/>
-  <text x="600" y="520" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="${BROWN}">Live-in and hourly home care · Skillman, New Jersey</text>
+  <text x="600" y="520" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="30" fill="${BROWN}">Live-in and hourly home care · All 21 counties of New Jersey</text>
   <text x="600" y="566" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="${BROWN}" opacity="0.75">heartsteadhomecarenj.com</text>
 </svg>`);
 const share = await sharp(text).composite([{ input: logo, top: Math.round((470 - logoHeight) / 2) + 20, left: 190 }]).png().toBuffer();
 await writeFile("src/app/opengraph-image.png", share);
 await writeFile("src/app/twitter-image.png", share);
-await writeFile("src/app/opengraph-image.alt.txt", "Heartstead Home Care logo: compassionate care, comfort at home. Home care in Skillman, New Jersey.");
-await writeFile("src/app/twitter-image.alt.txt", "Heartstead Home Care logo: compassionate care, comfort at home. Home care in Skillman, New Jersey.");
+await writeFile("src/app/opengraph-image.alt.txt", "Heartstead Home Care logo: compassionate care, comfort at home. Home care across all 21 counties of New Jersey.");
+await writeFile("src/app/twitter-image.alt.txt", "Heartstead Home Care logo: compassionate care, comfort at home. Home care across all 21 counties of New Jersey.");
 console.log("Brand assets written.");

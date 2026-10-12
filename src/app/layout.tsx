@@ -9,13 +9,13 @@ import "./globals.css";
 import "./site.css";
 import "./luxury.css";
 
-const description = "Compassionate live-in and hourly home care in Skillman, New Jersey, serving Montgomery Township and surrounding Somerset and Mercer County communities.";
+const description = "Compassionate live-in and hourly home care across all 21 counties of New Jersey, from our office in Skillman.";
 
 // Link-preview titles fall back to each page's <title>, so only shared fields are set here.
 export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(await requestOrigin()),
-    title: { default: "Heartstead Home Care | Home Care in Skillman, New Jersey", template: "%s | Heartstead Home Care" },
+    title: { default: "Heartstead Home Care | Home Care Across New Jersey", template: "%s | Heartstead Home Care" },
     description,
     applicationName: "Heartstead Home Care",
     openGraph: { type: "website", siteName: "Heartstead Home Care", locale: "en_US", description },
@@ -46,7 +46,7 @@ function businessSchema(settings: SiteData["settings"]) {
     telephone: digits.length === 10 ? `+1-${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}` : settings.phone,
     email: settings.publicEmail,
     address,
-    areaServed: ["Skillman, New Jersey", "Montgomery Township, New Jersey", "Somerset County, New Jersey", "Mercer County, New Jersey"].map((name) => ({ "@type": "Place", name })),
+    areaServed: { "@type": "State", name: "New Jersey", description: "All 21 counties of New Jersey" },
   };
 }
 

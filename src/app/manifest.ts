@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Heartstead Home Care",
     short_name: "Heartstead",
-    description: "Compassionate live-in and hourly home care in Skillman, New Jersey.",
+    description: "Compassionate live-in and hourly home care across all 21 counties of New Jersey.",
     start_url: "/",
     display: "standalone",
     background_color: "#FBF6EA",

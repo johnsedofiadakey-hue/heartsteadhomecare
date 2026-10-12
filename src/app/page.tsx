@@ -16,7 +16,7 @@ export default async function HomePage() {
       </div>
       <div className="hero-cover-shade" aria-hidden="true"/>
       <div className="container hero-cover-content">
-        <p className="hero-kicker">Heartstead Home Care <span aria-hidden="true">✦</span> Skillman, New Jersey</p>
+        <p className="hero-kicker">Heartstead Home Care <span aria-hidden="true">✦</span> All 21 counties of New Jersey</p>
         <h1>{home.heroTitle}</h1>
         <p className="hero-line">{settings.tagline}</p>
         <div className="hero-actions">

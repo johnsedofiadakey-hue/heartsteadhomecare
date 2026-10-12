@@ -21,7 +21,7 @@ export const siteSchema = z.object({
     benefit1Title: text(120), benefit1Text: text(1000), benefit2Title: text(120), benefit2Text: text(1000),
     benefit3Title: text(120), benefit3Text: text(1000), benefit4Title: text(120), benefit4Text: text(1000),
   }),
-  about: z.object({ lead: text(2000), mission: text(3000), story: text(5000), team: text(3000), approach: text(3000), note: text(3000) }),
+  about: z.object({ lead: text(2000), purpose: text(1000), mission: text(3000), story: text(5000), team: text(3000), approach: text(3000), note: text(3000) }),
   pages: z.object({
     servicesLead: text(2000), contactLead: text(2000), contactFollowUp: text(1000),
     careersLead: text(2000), careersWhyJoin: text(3000), careersResources: text(2000), careersBenefits: text(3000), careersQualifications: text(3000), paymentLead: text(2000),

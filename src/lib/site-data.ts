@@ -66,7 +66,7 @@ export type SiteData = {
     benefit4Title: string;
     benefit4Text: string;
   };
-  about: { lead: string; mission: string; story: string; team: string; approach: string; note: string };
+  about: { lead: string; purpose: string; mission: string; story: string; team: string; approach: string; note: string };
   pages: {
     servicesLead: string;
     contactLead: string;
@@ -153,8 +153,9 @@ export const defaultSite: SiteData = {
   },
   about: {
     lead: "Heartstead Home Care brings thoughtful support into the place people know best. We listen to each family's needs, respect the routines that make a house feel like home, and help loved ones explore care with confidence.",
-    mission: "To support each person with dignity, warmth, and practical care that fits their life at home.",
-    story: "Heartstead Home Care is based in Skillman, New Jersey. We believe families deserve clear conversations and care shaped around the person receiving it. Our story, leadership, and team biographies will be added as they are supplied and approved.",
+    purpose: "To help people feel safe, supported, and valued in the place they call home.",
+    mission: "Heartstead Home Care provides compassionate, dependable support that respects each person’s dignity, routines, and choices. We work with clients and families to shape care around individual needs and help make everyday life at home more comfortable.",
+    story: "Based in Skillman, New Jersey, we are licensed, bonded & insured. Heartstead Home Care was created with a simple belief: everyone deserves care that feels personal, respectful, and dependable.\n\nWe take time to listen to clients and families, understand what matters to them, and provide support shaped around their needs and routines. Our goal is to bring reassurance to families and help each person feel cared for at home.\n\nWe serve all 21 counties.",
     team: "Good care begins with people who pay attention. We work to understand what matters to each client, communicate with their family, and make the daily routine feel familiar and respectful.",
     approach: "Every person's needs and preferences are different. We begin with a conversation about daily life, the support that would help, and the schedule the family has in mind. Together, we can discuss the next steps.",
     note: "When you invite care into your home, trust matters. Heartstead is here to listen carefully, answer your questions, and help you understand the options available for your loved one.",

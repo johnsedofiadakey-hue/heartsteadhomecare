@@ -2,6 +2,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { adminBucket, adminDb } from "@/lib/firebase-admin";
 import { readResume } from "@/lib/resume";
 import { applicationSchema } from "@/lib/schemas";
+import { applicationDetailKeys } from "@/lib/application-fields";
 
 export const runtime = "nodejs";
 export async function POST(request: Request) {
@@ -9,7 +10,16 @@ export async function POST(request: Request) {
   if (!db) return Response.json({ error: "Online applications are not connected yet. Please contact the office." }, { status: 503 });
   let form: FormData;
   try { form = await request.formData(); } catch { return Response.json({ error: "Invalid request." }, { status: 400 }); }
-  const fields = Object.fromEntries([...form.entries()].filter(([key, value]) => key !== "resume" && typeof value === "string"));
+  const checkboxKeys = new Set([
+    "employmentHistoryAuthorized", "certified", "shiftDays", "shiftEvenings", "shiftNights", "shiftWeekends", "shiftLiveIn",
+    "employer1DoNotContact", "employer2DoNotContact", "employer3DoNotContact",
+  ]);
+  const details = Object.fromEntries(applicationDetailKeys.map((key) => [key, checkboxKeys.has(key) ? (form.has(key) ? "Yes" : "No") : String(form.get(key) ?? "")]));
+  const fields = {
+    ...Object.fromEntries([...form.entries()].filter(([key, value]) => key !== "resume" && typeof value === "string")),
+    drives: details.validDriverLicense,
+    details,
+  };
   const parsed = applicationSchema.safeParse(fields);
   if (!parsed.success) return Response.json({ error: "Please check the required fields and try again." }, { status: 400 });
   if (parsed.data.website) return Response.json({ ok: true });

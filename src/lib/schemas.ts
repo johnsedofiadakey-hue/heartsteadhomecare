@@ -44,5 +44,21 @@ export const inquirySchema = z.object({
 });
 
 export const applicationSchema = z.object({
-  firstName: text(80), lastName: text(80), email: z.email().max(200), phone: text(30), address1: text(200), address2: optionalText(200), city: text(100), state: text(40), zipCode: text(10), position: text(120), drives: z.enum(["Yes", "No"]), hasStateLicense: z.enum(["Yes", "No", "In progress"]), referralSource: optionalText(120), jobId: text(100), website: z.string().max(200).optional(),
+  firstName: text(80), middleName: optionalText(80), lastName: text(80),
+  email: z.email().max(200), phone: text(30), address1: text(200), address2: optionalText(200),
+  city: text(100), state: text(40), zipCode: text(10), position: z.enum(["Companion", "Certified Home Health Aide (CHHA)", "Live-in", "Other"]),
+  drives: z.enum(["Yes", "No"]), hasStateLicense: z.enum(["Yes", "No"]),
+  referralSource: optionalText(120), jobId: text(100), website: z.string().max(200).optional(),
+  details: z.record(z.string(), z.string().trim().max(3000)),
+}).superRefine((application, ctx) => {
+  const details = application.details;
+  for (const key of ["applicationDate", "age18OrOlder", "reliableTransportation", "workEligible", "relativeWorksHere", "previouslyWorkedHere", "currentlyWorking", "onLayoffRecall", "cprCertified", "signatureName", "signatureDate"]) {
+    if (!details[key]) ctx.addIssue({ code: "custom", path: ["details", key], message: "Required application field." });
+  }
+  for (const key of ["age18OrOlder", "reliableTransportation", "workEligible", "relativeWorksHere", "previouslyWorkedHere", "currentlyWorking", "onLayoffRecall", "cprCertified"]) {
+    if (details[key] && !["Yes", "No"].includes(details[key])) ctx.addIssue({ code: "custom", path: ["details", key], message: "Choose yes or no." });
+  }
+  if (details.employmentHistoryAuthorized !== "Yes" || details.certified !== "Yes") ctx.addIssue({ code: "custom", message: "Both application declarations must be accepted." });
+  if (application.position === "Other" && !details.otherPosition) ctx.addIssue({ code: "custom", path: ["details", "otherPosition"], message: "Describe the other position." });
+  if (details.relativeWorksHere === "Yes" && !details.relativeName) ctx.addIssue({ code: "custom", path: ["details", "relativeName"], message: "Enter your relative's name." });
 });

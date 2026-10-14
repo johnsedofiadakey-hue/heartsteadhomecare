@@ -6,12 +6,45 @@ import Link from "next/link";
 import { Briefcase, ExternalLink, FileText, HeartHandshake, House, Image as ImageIcon, Inbox, Info, LayoutDashboard, LogOut, Menu, MessageSquareQuote, Newspaper, Settings, Upload, X, type LucideIcon } from "lucide-react";
 import { clientAuth } from "@/lib/firebase-client";
 import type { SiteData, Service, Job, Post, Testimonial } from "@/lib/site-data";
+import { applicationDetailKeys, caregivingSkills } from "@/lib/application-fields";
 
 type Tab = "Overview" | "Homepage" | "About" | "Pages" | "Services" | "Jobs" | "Testimonials" | "Blog" | "Media" | "Settings" | "Inbox";
 type Media = { id: string; url: string; alt: string };
 type Submission = { id: string; firstName: string; lastName: string; email: string; phone: string; createdAt: string | null; status: string; [key: string]: unknown };
 type ResumeInfo = { fileName: string; size: number };
 const isResume = (value: unknown): value is ResumeInfo => Boolean(value && typeof value === "object" && typeof (value as ResumeInfo).fileName === "string");
+const detailLabels: Record<string, string> = {
+  applicationDate: "Application date", dateOfBirth: "Date of birth", timeAtAddress: "Time at address",
+  age18OrOlder: "18 years old or older", validDriverLicense: "Valid driver license",
+  reliableTransportation: "Reliable transportation", workEligible: "Eligible to work in the U.S.",
+  relativeWorksHere: "Relative employed here", relativeName: "Relative's name", previouslyWorkedHere: "Previously worked here",
+  otherPosition: "Other position", availableStartDate: "Available start date", weeklyHours: "Available hours per week",
+  currentlyWorking: "Currently working", currentWorkHours: "Current hours per week", onLayoffRecall: "On layoff and subject to recall",
+  highestGrade: "Highest grade completed", chhaTrainingLocation: "CHHA training location", chhaTrainingCompletion: "CHHA training completion",
+  cprCertified: "CPR certified", employmentHistoryAuthorized: "Prior employer contact authorized",
+  caregivingExperience: "Caregiving experience and qualifications", whyHeartstead: "Why Heartstead",
+  mostSatisfying: "Most satisfying work", leastSatisfying: "Least satisfying work", reliability: "Reliability",
+  signatureName: "Electronic signature", signatureDate: "Signature date", certified: "Affidavit accepted",
+};
+for (const [key, label] of caregivingSkills) { detailLabels[`skill${key}`] = label; detailLabels[`skill${key}Years`] = `${label} — years`; }
+function applicationDetailGroup(key: string) {
+  if (/^employer/.test(key)) return "Employment history";
+  if (/^reference/.test(key) || ["caregivingExperience", "whyHeartstead", "mostSatisfying", "leastSatisfying", "reliability"].includes(key)) return "References & general information";
+  if (/^school|^license|^skill/.test(key) || ["highestGrade", "chhaTrainingLocation", "chhaTrainingCompletion", "cprCertified"].includes(key)) return "Education, training & skills";
+  if (["employmentHistoryAuthorized", "signatureName", "signatureDate", "certified"].includes(key)) return "Authorization & signature";
+  if (/^shift/.test(key) || ["otherPosition", "availableStartDate", "weeklyHours", "currentlyWorking", "currentWorkHours", "onLayoffRecall"].includes(key)) return "Position & availability";
+  return "Personal information";
+}
+function ApplicationDetails({ value }: { value: unknown }) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const details = value as Record<string, unknown>;
+  const groups = ["Personal information", "Position & availability", "Education, training & skills", "Employment history", "References & general information", "Authorization & signature"];
+  return <div className="admin-application-details">{groups.map((group) => {
+    const entries = applicationDetailKeys.filter((key) => applicationDetailGroup(key) === group && typeof details[key] === "string" && details[key] !== "");
+    if (!entries.length) return null;
+    return <section key={group}><h4>{group}</h4><dl>{entries.map((key) => <div key={key}><dt>{detailLabels[key] ?? key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/(\d+)/g, " $1 ").trim()}</dt><dd>{String(details[key])}</dd></div>)}</dl></section>;
+  })}</div>;
+}
 
 const tabIcons: Record<Tab, LucideIcon> = { Overview: LayoutDashboard, Homepage: House, About: Info, Pages: FileText, Services: HeartHandshake, Jobs: Briefcase, Testimonials: MessageSquareQuote, Blog: Newspaper, Media: ImageIcon, Settings, Inbox };
 const navSections: { label: string; items: Tab[] }[] = [
@@ -133,6 +166,20 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
       setMessage("Submission status updated.");
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not update the submission."); }
   }
+  async function saveInterview(id: string, interviewedBy: string, interviewDate: string) {
+    setMessage("");
+    try {
+      const bearer = await token();
+      const response = await fetch("/api/admin/submissions", {
+        method: "PATCH", headers: { "content-type": "application/json", authorization: `Bearer ${bearer}` },
+        body: JSON.stringify({ kind: "applications", id, interviewedBy, interviewDate }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Could not save interview details.");
+      setApplications((current) => current.map((item) => item.id === id ? { ...item, interviewedBy, interviewDate } : item));
+      setMessage("Interview details saved.");
+    } catch (cause) { setMessage(cause instanceof Error ? cause.message : "Could not save interview details."); }
+  }
   async function downloadResume(id: string, fileName: string) {
     setMessage("");
     try {
@@ -170,7 +217,14 @@ export function AdminApp({ initialSite, configured }: { initialSite: SiteData; c
     if (!items.length) return <p>No {kind === "inquiries" ? "care inquiries" : "job applications"} are loaded.</p>;
     return items.map((item) => <details className="admin-submission-card" key={item.id}>
       <summary><strong>{item.firstName} {item.lastName}</strong><span>{item.email} · {item.phone}</span><small>{item.createdAt ? formatOfficeTime(item.createdAt) : "Date unavailable"} · {item.status.replace("_", " ")}</small></summary>
-      <div className="admin-submission-detail">{Object.entries(item).filter(([key]) => !["id", "firstName", "lastName", "email", "phone", "createdAt", "updatedAt", "updatedBy", "status", "website", "resume"].includes(key)).map(([key, value]) => <p key={key}><strong>{key.replace(/([A-Z])/g, " $1")}:</strong> {String(value ?? "")}</p>)}{kind === "applications" && <p><strong>Resume:</strong> {isResume(item.resume) ? <button type="button" className="admin-link-button" onClick={() => void downloadResume(item.id, (item.resume as ResumeInfo).fileName)}>Download {item.resume.fileName}</button> : "Not provided"}</p>}<a href={`mailto:${item.email}`}>Reply by email</a><label>Status <select value={item.status} disabled={previewOnly} onChange={(event) => void updateSubmission(kind, item.id, event.target.value)}><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select></label></div>
+      <div className="admin-submission-detail">
+        {Object.entries(item).filter(([key]) => !["id", "firstName", "lastName", "email", "phone", "createdAt", "updatedAt", "updatedBy", "status", "website", "resume", "details", "interviewedBy", "interviewDate"].includes(key)).map(([key, value]) => <p key={key}><strong>{key.replace(/([A-Z])/g, " $1")}:</strong> {String(value ?? "")}</p>)}
+        {kind === "applications" && <ApplicationDetails value={item.details}/>}
+        {kind === "applications" && <p><strong>Resume:</strong> {isResume(item.resume) ? <button type="button" className="admin-link-button" onClick={() => void downloadResume(item.id, (item.resume as ResumeInfo).fileName)}>Download {item.resume.fileName}</button> : "Not provided"}</p>}
+        {kind === "applications" && <form className="admin-interview-form" onSubmit={(event) => { event.preventDefault(); const values = new FormData(event.currentTarget); void saveInterview(item.id, String(values.get("interviewedBy") ?? ""), String(values.get("interviewDate") ?? "")); }}><h4>Heartstead use only</h4><label>Interviewed by<input name="interviewedBy" defaultValue={String(item.interviewedBy ?? "")} maxLength={120} disabled={previewOnly}/></label><label>Interview date<input name="interviewDate" type="date" defaultValue={String(item.interviewDate ?? "")} disabled={previewOnly}/></label><button type="submit" disabled={previewOnly}>Save interview details</button></form>}
+        <a href={`mailto:${item.email}`}>Reply by email</a>
+        <label>Status <select value={item.status} disabled={previewOnly} onChange={(event) => void updateSubmission(kind, item.id, event.target.value)}><option value="new">New</option><option value="in_progress">In progress</option><option value="closed">Closed</option></select></label>
+      </div>
     </details>);
   }
 

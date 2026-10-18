@@ -1,18 +1,19 @@
 // Branded QR code for heartsteadhomecarenj.com: coffee brown on ivory, rounded modules,
 // custom finder markers and the house-and-heart emblem in the centre.
 import { mkdir, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import QRCode from "qrcode";
 import sharp from "sharp";
 
-const URL = "https://heartsteadhomecarenj.com";
-const LOGO = new URL("../../public/images/logo-transparent.png", import.meta.url).pathname;
+const SITE_URL = "https://heartsteadhomecarenj.com";
+const LOGO = fileURLToPath(new URL("../../public/images/logo-transparent.png", import.meta.url));
 const EMBLEM = { left: 167, top: 155, width: 442, height: 452 };
-const OUT = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
+const OUT = fileURLToPath(new URL(".", import.meta.url)).replace(/\/$/, "");
 const BROWN = "#4A1E02";
 const IVORY = "#FBF6EA";
 const CARD = "#F3EADB";
 
-const qr = QRCode.create(URL, { errorCorrectionLevel: "H" });
+const qr = QRCode.create(SITE_URL, { errorCorrectionLevel: "H" });
 const n = qr.modules.size;
 const dark = (r, c) => qr.modules.get(r, c) === 1;
 const QUIET = 4;

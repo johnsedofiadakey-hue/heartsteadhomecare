@@ -65,3 +65,7 @@ env:
     value: "heartsteadh@gmail.com"
     availability:
       - RUNTIME
+  - variable: GMAIL_APP_PASSWORD
+    secret: gmail-app-password
+    availability:
+      - RUNTIME

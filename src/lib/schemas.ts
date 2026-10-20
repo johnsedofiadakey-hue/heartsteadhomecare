@@ -1,3 +1,4 @@
+import { applicationYesNoKeys, labelFor, requiredDetailKeys, skillRatings } from "@/lib/application-fields";
 import { z } from "zod";
 
 const text = (max = 1000) => z.string().trim().min(1).max(max);
@@ -52,13 +53,16 @@ export const applicationSchema = z.object({
   details: z.record(z.string(), z.string().trim().max(3000)),
 }).superRefine((application, ctx) => {
   const details = application.details;
-  for (const key of ["applicationDate", "age18OrOlder", "reliableTransportation", "workEligible", "relativeWorksHere", "previouslyWorkedHere", "currentlyWorking", "onLayoffRecall", "cprCertified", "signatureName", "signatureDate"]) {
-    if (!details[key]) ctx.addIssue({ code: "custom", path: ["details", key], message: "Required application field." });
+  for (const key of requiredDetailKeys) {
+    if (!details[key]) ctx.addIssue({ code: "custom", path: ["details", key], message: `Please answer: ${labelFor(key).replace(/\.$/, "")}.` });
   }
-  for (const key of ["age18OrOlder", "reliableTransportation", "workEligible", "relativeWorksHere", "previouslyWorkedHere", "currentlyWorking", "onLayoffRecall", "cprCertified"]) {
-    if (details[key] && !["Yes", "No"].includes(details[key])) ctx.addIssue({ code: "custom", path: ["details", key], message: "Choose yes or no." });
+  for (const key of applicationYesNoKeys) {
+    if (details[key] && !["Yes", "No"].includes(details[key])) ctx.addIssue({ code: "custom", path: ["details", key], message: `Choose yes or no for: ${labelFor(key).replace(/\.$/, "")}.` });
   }
-  if (details.employmentHistoryAuthorized !== "Yes" || details.certified !== "Yes") ctx.addIssue({ code: "custom", message: "Both application declarations must be accepted." });
+  for (const [key, value] of Object.entries(details)) {
+    if (key.startsWith("skill_") && value && !(skillRatings as readonly string[]).includes(value)) ctx.addIssue({ code: "custom", path: ["details", key], message: `Choose a rating for: ${labelFor(key)}.` });
+  }
+  if (details.employmentHistoryAuthorized !== "Yes" || details.certified !== "Yes") ctx.addIssue({ code: "custom", message: "Please accept both declarations: the employment history request and the signature statement." });
   if (application.position === "Other" && !details.otherPosition) ctx.addIssue({ code: "custom", path: ["details", "otherPosition"], message: "Describe the other position." });
-  if (details.relativeWorksHere === "Yes" && !details.relativeName) ctx.addIssue({ code: "custom", path: ["details", "relativeName"], message: "Enter your relative's name." });
+  if (details.relativeWorksHere === "Yes" && !details.relativeName) ctx.addIssue({ code: "custom", path: ["details", "relativeName"], message: "You answered that a relative works at Heartstead. Please enter their name." });
 });

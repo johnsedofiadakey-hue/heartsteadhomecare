@@ -57,3 +57,11 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: GMAIL_USER
+    value: "heartsteadh@gmail.com"
+    availability:
+      - RUNTIME
+  - variable: APPLICATION_NOTIFY_EMAIL
+    value: "heartsteadh@gmail.com"
+    availability:
+      - RUNTIME

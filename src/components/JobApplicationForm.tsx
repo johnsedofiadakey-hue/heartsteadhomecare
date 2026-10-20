@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { caregivingSkills, shiftOptions } from "@/lib/application-fields";
+import { shiftOptions, skillAreas, skillKey, skillRatings } from "@/lib/application-fields";
 
 type Field = { name: string; label: string; type?: string; required?: boolean; maxLength?: number; choices?: readonly string[]; ariaLabel?: string };
 const yesNo = ["Yes", "No"] as const;
@@ -12,12 +12,14 @@ const personal: Field[] = [
   { name: "email", label: "Email address", type: "email", required: true }, { name: "applicationDate", label: "Application date", type: "date", required: true },
   { name: "address1", label: "Street address", required: true }, { name: "address2", label: "Apartment or suite" },
   { name: "city", label: "City", required: true }, { name: "state", label: "State", required: true },
-  { name: "zipCode", label: "ZIP code", required: true }, { name: "dateOfBirth", label: "Date of birth", type: "date" },
+  { name: "zipCode", label: "ZIP code", required: true },
   { name: "timeAtAddress", label: "How long have you lived at this address?" },
+  { name: "primaryLanguage", label: "Primary language" }, { name: "otherLanguages", label: "Other languages you speak" },
   { name: "age18OrOlder", label: "Are you 18 years old or older?", choices: yesNo, required: true },
   { name: "hasStateLicense", label: "Do you currently have a valid CHHA license or occupational certification?", choices: yesNo, required: true },
   { name: "validDriverLicense", label: "Do you have a valid driver license?", choices: yesNo, required: true },
   { name: "reliableTransportation", label: "Do you have reliable transportation?", choices: yesNo, required: true },
+  { name: "autoInsurance", label: "If you drive, do you have current auto insurance?", choices: yesNo },
   { name: "workEligible", label: "Are you legally eligible to work in the United States?", choices: yesNo, required: true },
   { name: "relativeWorksHere", label: "Do you have a relative working for Heartstead Home Care?", choices: yesNo, required: true },
   { name: "relativeName", label: "If yes, relative’s name" },
@@ -34,6 +36,18 @@ const position: Field[] = [
   { name: "onLayoffRecall", label: "Are you on layoff and subject to recall by another employer?", choices: yesNo, required: true },
 ];
 
+const emergency = (n: number): Field[] => [
+  { name: `emergency${n}Name`, label: "Full name", required: n === 1 }, { name: `emergency${n}Relationship`, label: "Relationship to you", required: n === 1 },
+  { name: `emergency${n}Phone`, label: "Phone", type: "tel", required: n === 1 },
+];
+const preferences: Field[] = [
+  { name: "homeCareExperience", label: "Do you have experience working in home care?", choices: yesNo, required: true },
+  { name: "comfortBathing", label: "Are you comfortable helping clients bathe or shower?", choices: yesNo, required: true },
+  { name: "comfortCookingHousekeeping", label: "Are you comfortable cooking and doing light housekeeping?", choices: yesNo, required: true },
+  { name: "comfortSmokingHome", label: "Are you comfortable working in a home where the client smokes?", choices: yesNo, required: true },
+  { name: "drugScreenWilling", label: "If offered a position, are you willing to take a pre-employment drug screen?", choices: yesNo, required: true },
+];
+
 function Input({ field }: { field: Field }) {
   const { name, label, type = "text", required = false, maxLength = 200, choices, ariaLabel } = field;
   return <label>{label} {required && <b>*</b>}{choices
@@ -43,7 +57,7 @@ function Input({ field }: { field: Field }) {
 function Grid({ fields, context }: { fields: Field[]; context?: string }) { return <div className="form-grid">{fields.map((field) => <Input key={field.name} field={context ? { ...field, ariaLabel: `${context}: ${field.label}` } : field}/>)}</div>; }
 function Answer({ name, label }: { name: string; label: string }) { return <label className="application-long-answer">{label}<textarea name={name} rows={4} maxLength={3000}/></label>; }
 function Section({ id, number, title, children }: { id: string; number: number; title: string; children: React.ReactNode }) {
-  return <section id={id} className="application-section"><span className="application-section-number">{String(number).padStart(2, "0")} / 06</span><h2>{title}</h2>{children}</section>;
+  return <section id={id} className="application-section"><span className="application-section-number">{String(number).padStart(2, "0")} / 08</span><h2>{title}</h2>{children}</section>;
 }
 
 export function ApplicationCover() {
@@ -71,32 +85,34 @@ export function JobApplicationForm({ jobId }: { jobId?: string }) {
   }
   return <form className="care-form job-form full-application" onSubmit={submit}>
     <p className="application-intro">Please complete the sections below. Fields marked <b>*</b> are required. You may attach a resume, but please also answer the application questions.</p>
-    <nav className="application-sections" aria-label="Application sections"><a href="#application-personal">Personal</a><a href="#application-position">Position</a><a href="#application-training">Training</a><a href="#application-history">Work history</a><a href="#application-references">References</a><a href="#application-signature">Signature</a></nav>
+    <nav className="application-sections" aria-label="Application sections"><a href="#application-personal">Personal</a><a href="#application-emergency">Emergency contacts</a><a href="#application-position">Position</a><a href="#application-preferences">Work preferences</a><a href="#application-training">Training & skills</a><a href="#application-history">Work history</a><a href="#application-references">References</a><a href="#application-signature">Signature</a></nav>
     <Section id="application-personal" number={1} title="Personal information"><Grid fields={personal}/></Section>
-    <Section id="application-position" number={2} title="Position desired & availability"><Grid fields={position}/><fieldset className="application-choice-group"><legend>Are you available for the following shifts? Check all that apply.</legend><div className="application-check-grid">{shiftOptions.map((shift) => <label key={shift}><input type="checkbox" name={`shift${shift.replace(/[^A-Za-z]/g, "")}`}/>{shift}</label>)}</div></fieldset></Section>
-    <Section id="application-training" number={3} title="Education, training & skills">
+    <Section id="application-emergency" number={2} title="Emergency contacts"><p className="application-help">Who should we contact in an emergency? A second contact is optional.</p>{[1, 2].map((n) => <div className="application-repeat" key={n}><strong>{n === 1 ? "Primary contact" : "Second contact (optional)"}</strong><Grid context={`Emergency contact ${n}`} fields={emergency(n)}/></div>)}</Section>
+    <Section id="application-position" number={3} title="Position desired & availability"><Grid fields={position}/><fieldset className="application-choice-group"><legend>Are you available for the following shifts? Check all that apply.</legend><div className="application-check-grid">{shiftOptions.map((shift) => <label key={shift}><input type="checkbox" name={`shift${shift.replace(/[^A-Za-z]/g, "")}`}/>{shift}</label>)}</div></fieldset></Section>
+    <Section id="application-preferences" number={4} title="Work preferences"><Grid fields={preferences}/><Answer name="offerToPosition" label="What can you offer this position?"/><Answer name="problemHandled" label="Tell us about a problem you faced at work and how you handled it."/></Section>
+    <Section id="application-training" number={5} title="Education, training & skills">
       <Grid fields={[{ name: "highestGrade", label: "Highest grade completed", choices: ["9", "10", "11", "12", "13", "14", "15", "16+"] }]}/>
       <h3>Schools, beginning with high school</h3>{[1, 2, 3].map((n) => <div className="application-repeat" key={n}><strong>School {n}</strong><Grid context={`School ${n}`} fields={[{ name: `school${n}Name`, label: "School" }, { name: `school${n}Award`, label: "Subject or degree awarded" }]}/></div>)}
       <Grid fields={[{ name: "chhaTrainingLocation", label: "CHHA training location" }, { name: "chhaTrainingCompletion", label: "Training completion date", type: "month" }]}/>
       <h3>Professional licenses or certificates</h3>{[1, 2, 3].map((n) => <div className="application-repeat" key={n}><strong>License or certificate {n}</strong><Grid context={`License or certificate ${n}`} fields={[{ name: `license${n}Type`, label: "Type" }, { name: `license${n}Authority`, label: "State or authority" }, { name: `license${n}Number`, label: "License number" }, { name: `license${n}Expiration`, label: "Expiration date", type: "date" }]}/></div>)}
       <Grid fields={[{ name: "cprCertified", label: "Are you CPR certified?", choices: yesNo, required: true }]}/>
-      <h3>Caregiving skills & experience</h3><p className="application-help">Mark yes or no and estimate your experience in years.</p><div className="application-skills">{caregivingSkills.map(([key, label]) => <div className="application-skill" key={key}><strong>{label}</strong><Input field={{ name: `skill${key}`, label: "Experience", ariaLabel: `${label}: experience`, choices: yesNo }}/><Input field={{ name: `skill${key}Years`, label: "Years", ariaLabel: `${label}: years of experience`, type: "number" }}/></div>)}</div>
+      <h3>Skills assessment</h3><p className="application-help">For each task, choose the option that best describes you.</p>{skillAreas.map(({ area, skills }) => <fieldset className="application-skill-area" key={area}><legend>{area}</legend><div className="application-skills">{skills.map(([key, label]) => <div className="application-skill" key={key}><strong>{label}</strong><Input field={{ name: skillKey(key), label: "Your experience", ariaLabel: `${area}: ${label}`, choices: skillRatings }}/></div>)}</div></fieldset>)}
     </Section>
-    <Section id="application-history" number={4} title="Employment history">
+    <Section id="application-history" number={6} title="Employment history">
       <p>I authorize Heartstead Home Care to request and receive pertinent information about my employment with prior employers within one year of the date of this application, including information about the end of my employment.</p>
       <label className="application-consent"><input type="checkbox" name="employmentHistoryAuthorized" required/> I authorize this employment history request. <b>*</b></label>
       <p className="application-help">List your three most recent employers, starting with your current or most recent job. You may indicate if an employer should not be contacted.</p>
       {[1, 2, 3].map((n) => <div className="application-repeat" key={n}><div className="application-repeat-head"><strong>Employer {n}</strong><label><input type="checkbox" name={`employer${n}DoNotContact`} aria-label={`Employer ${n}: do not contact`}/> Do not contact</label></div><Grid context={`Employer ${n}`} fields={[{ name: `employer${n}Name`, label: "Employer name" }, { name: `employer${n}Title`, label: "Position or title" }, { name: `employer${n}Address`, label: "Address (street, suite, city, state, ZIP)" }, { name: `employer${n}Phone`, label: "Phone", type: "tel" }, { name: `employer${n}Supervisor`, label: "Supervisor name" }, { name: `employer${n}From`, label: "Dates employed: from", type: "month" }, { name: `employer${n}To`, label: "Dates employed: to", type: "month" }]}/><Answer name={`employer${n}Duties`} label={`Employer ${n}: briefly describe your duties`}/><Answer name={`employer${n}Reason`} label={`Employer ${n}: reason for leaving`}/></div>)}
     </Section>
-    <Section id="application-references" number={5} title="References & general information">
-      <p>Please list two references who are not family members.</p>{[1, 2].map((n) => <div className="application-repeat" key={n}><strong>Reference {n}</strong><Grid context={`Reference ${n}`} fields={[{ name: `reference${n}Name`, label: "Name" }, { name: `reference${n}Address`, label: "Address" }, { name: `reference${n}Phone`, label: "Phone", type: "tel" }]}/></div>)}
+    <Section id="application-references" number={7} title="References & general information">
+      <p>Please list three references who are not related to you.</p>{[1, 2, 3].map((n) => <div className="application-repeat" key={n}><strong>Reference {n}</strong><Grid context={`Reference ${n}`} fields={[{ name: `reference${n}Name`, label: "Name", required: n === 1 }, { name: `reference${n}YearsKnown`, label: "Years known", type: "number" }, { name: `reference${n}Phone`, label: "Phone", type: "tel", required: n === 1 }, { name: `reference${n}Address`, label: "Address (optional)" }]}/></div>)}
       <Answer name="caregivingExperience" label="Describe your caregiving experience and any skills, languages, training, volunteer work, or hobbies that qualify you."/>
       <Answer name="whyHeartstead" label="Why do you want to work for Heartstead Home Care?"/>
       <Answer name="mostSatisfying" label="What makes work most satisfying to you?"/>
       <Answer name="leastSatisfying" label="What makes work least satisfying to you?"/>
       <Answer name="reliability" label="How would you describe your reliability?"/>
     </Section>
-    <Section id="application-signature" number={6} title="Affidavit & signature">
+    <Section id="application-signature" number={8} title="Affidavit & signature">
       <p>I understand employment with Heartstead Home Care is at will, consistent with applicable law, and this application is not a contract or guarantee of employment. I certify that my statements are true and complete. I authorize Heartstead Home Care to verify information relevant to my employment, education, qualifications, and background, and release those providing such information from liability to the extent permitted by law.</p>
       <Grid fields={[{ name: "signatureName", label: "Type your full legal name as your electronic signature", required: true }, { name: "signatureDate", label: "Signature date", type: "date", required: true }]}/>
       <label className="application-consent"><input type="checkbox" name="certified" required/> I have read the statement above and agree to sign this application electronically. <b>*</b></label>

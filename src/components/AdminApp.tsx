@@ -6,43 +6,21 @@ import Link from "next/link";
 import { Briefcase, ExternalLink, FileText, HeartHandshake, House, Image as ImageIcon, Inbox, Info, LayoutDashboard, LogOut, Menu, MessageSquareQuote, Newspaper, Settings, Upload, X, type LucideIcon } from "lucide-react";
 import { clientAuth } from "@/lib/firebase-client";
 import type { SiteData, Service, Job, Post, Testimonial } from "@/lib/site-data";
-import { applicationDetailKeys, caregivingSkills } from "@/lib/application-fields";
+import { applicationDetailGroup, applicationGroups, displayDetailKeys, labelFor } from "@/lib/application-fields";
 
 type Tab = "Overview" | "Homepage" | "About" | "Pages" | "Services" | "Jobs" | "Testimonials" | "Blog" | "Media" | "Settings" | "Inbox";
 type Media = { id: string; url: string; alt: string };
 type Submission = { id: string; firstName: string; lastName: string; email: string; phone: string; createdAt: string | null; status: string; [key: string]: unknown };
 type ResumeInfo = { fileName: string; size: number };
 const isResume = (value: unknown): value is ResumeInfo => Boolean(value && typeof value === "object" && typeof (value as ResumeInfo).fileName === "string");
-const detailLabels: Record<string, string> = {
-  applicationDate: "Application date", dateOfBirth: "Date of birth", timeAtAddress: "Time at address",
-  age18OrOlder: "18 years old or older", validDriverLicense: "Valid driver license",
-  reliableTransportation: "Reliable transportation", workEligible: "Eligible to work in the U.S.",
-  relativeWorksHere: "Relative employed here", relativeName: "Relative's name", previouslyWorkedHere: "Previously worked here",
-  otherPosition: "Other position", availableStartDate: "Available start date", weeklyHours: "Available hours per week",
-  currentlyWorking: "Currently working", currentWorkHours: "Current hours per week", onLayoffRecall: "On layoff and subject to recall",
-  highestGrade: "Highest grade completed", chhaTrainingLocation: "CHHA training location", chhaTrainingCompletion: "CHHA training completion",
-  cprCertified: "CPR certified", employmentHistoryAuthorized: "Prior employer contact authorized",
-  caregivingExperience: "Caregiving experience and qualifications", whyHeartstead: "Why Heartstead",
-  mostSatisfying: "Most satisfying work", leastSatisfying: "Least satisfying work", reliability: "Reliability",
-  signatureName: "Electronic signature", signatureDate: "Signature date", certified: "Affidavit accepted",
-};
-for (const [key, label] of caregivingSkills) { detailLabels[`skill${key}`] = label; detailLabels[`skill${key}Years`] = `${label} — years`; }
-function applicationDetailGroup(key: string) {
-  if (/^employer/.test(key)) return "Employment history";
-  if (/^reference/.test(key) || ["caregivingExperience", "whyHeartstead", "mostSatisfying", "leastSatisfying", "reliability"].includes(key)) return "References & general information";
-  if (/^school|^license|^skill/.test(key) || ["highestGrade", "chhaTrainingLocation", "chhaTrainingCompletion", "cprCertified"].includes(key)) return "Education, training & skills";
-  if (["employmentHistoryAuthorized", "signatureName", "signatureDate", "certified"].includes(key)) return "Authorization & signature";
-  if (/^shift/.test(key) || ["otherPosition", "availableStartDate", "weeklyHours", "currentlyWorking", "currentWorkHours", "onLayoffRecall"].includes(key)) return "Position & availability";
-  return "Personal information";
-}
 function ApplicationDetails({ value }: { value: unknown }) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const details = value as Record<string, unknown>;
-  const groups = ["Personal information", "Position & availability", "Education, training & skills", "Employment history", "References & general information", "Authorization & signature"];
+  const groups = applicationGroups;
   return <div className="admin-application-details">{groups.map((group) => {
-    const entries = applicationDetailKeys.filter((key) => applicationDetailGroup(key) === group && typeof details[key] === "string" && details[key] !== "");
+    const entries = displayDetailKeys.filter((key) => applicationDetailGroup(key) === group && typeof details[key] === "string" && details[key] !== "");
     if (!entries.length) return null;
-    return <section key={group}><h4>{group}</h4><dl>{entries.map((key) => <div key={key}><dt>{detailLabels[key] ?? key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/(\d+)/g, " $1 ").trim()}</dt><dd>{String(details[key])}</dd></div>)}</dl></section>;
+    return <section key={group}><h4>{group}</h4><dl>{entries.map((key) => <div key={key}><dt>{labelFor(key)}</dt><dd>{String(details[key])}</dd></div>)}</dl></section>;
   })}</div>;
 }
 
